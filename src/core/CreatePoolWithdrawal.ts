@@ -1,37 +1,44 @@
-import { Data, Lucid, Credential, toUnit, TxComplete } from "lucid-cardano";
-import deployedValidatorsJson from "./../deployedValidators.json" assert { type: "json" };
-import { GOV_TOKEN_NAME } from "./../constants";
 import {
-  calculateReceivedLptokens,
+  Data,
+  Lucid,
+  Credential,
+  toUnit,
+  TxComplete,
+  UTxO,
+} from "lucid-cardano";
+import deployedValidatorsJson from "../deployedValidators.json" assert { type: "json" };
+import { GOV_TOKEN_NAME } from "../constants";
+import {
+  calculateLpsToBurn,
   collectValidators,
   getOutputReference,
   getPoolArtifacts,
   parseValidators,
   toUnitOrLovelace,
-} from "./../utils/helpers";
-import { DeployedValidators } from "./../types";
-import { LiquidityTokenLiquidityToken, PoolSpend } from "./../plutus";
+} from "../utils/helpers";
+import { DeployedValidators } from "../types";
+import { LiquidityTokenLiquidityToken, PoolSpend } from "../plutus";
 
-export interface DepositParams {
+export interface WithdrawParams {
   lucid: Lucid;
-  balanceToDeposit: bigint;
+  amountToWithdraw: bigint;
   poolTokenName: string;
   lpValidatorTxHash: string;
   lpValidatorTxOutput: number;
 }
 
-export interface DepositResult {
+export interface WithdrawResult {
   success: boolean;
   error?: string;
   tx?: TxComplete;
 }
 
-export async function createDeposit(
-  params: DepositParams
-): Promise<DepositResult> {
+export async function createWithdrawal(
+  params: WithdrawParams
+): Promise<WithdrawResult> {
   const {
     lucid,
-    balanceToDeposit,
+    amountToWithdraw,
     poolTokenName,
     lpValidatorTxHash,
     lpValidatorTxOutput,
@@ -58,17 +65,19 @@ export async function createDeposit(
     const poolDatumMapped = poolArtifacts.poolDatumMapped;
     const poolConfigDatum = poolArtifacts.poolConfigDatum;
 
-    const lpTokensToReceive: number = calculateReceivedLptokens(
+    let lpsToBurn = calculateLpsToBurn(
       poolDatumMapped.balance,
       poolDatumMapped.lentOut,
-      balanceToDeposit,
+      amountToWithdraw,
       poolDatumMapped.totalLpTokens
     );
 
     poolDatumMapped.balance =
-      poolDatumMapped.balance + balanceToDeposit + poolConfigDatum.poolFee;
+      poolDatumMapped.balance -
+      BigInt(amountToWithdraw) +
+      poolConfigDatum.poolFee;
     poolDatumMapped.totalLpTokens =
-      poolDatumMapped.totalLpTokens + BigInt(lpTokensToReceive);
+      poolDatumMapped.totalLpTokens - BigInt(lpsToBurn);
 
     const poolRedeemer: PoolSpend["redeemer"] = {
       wrapper: {
@@ -76,7 +85,7 @@ export async function createDeposit(
           Continuing: [
             {
               LpAdjust: {
-                valueDelta: balanceToDeposit,
+                valueDelta: BigInt(amountToWithdraw) * -1n,
                 continuingOutput: 0n,
               },
             },
@@ -93,9 +102,19 @@ export async function createDeposit(
       },
     };
 
-    let metadata = {
-      msg: ["Lenfi: DEPOSITED to pool."],
+    let valueToRepay = {
+      [toUnitOrLovelace(
+        poolDatumMapped.params.loanCs.policyId,
+        poolDatumMapped.params.loanCs.assetName
+      )]: poolDatumMapped.balance,
+      [toUnit(validators.poolScriptHash, poolTokenName)]: 1n,
     };
+
+    if (poolDatumMapped.balance === 0n) {
+      valueToRepay = {
+        [toUnit(validators.poolScriptHash, poolTokenName)]: 1n,
+      };
+    }
 
     const deployedValidators: DeployedValidators = parseValidators(
       deployedValidatorsJson
@@ -104,33 +123,28 @@ export async function createDeposit(
     const txBuilder = lucid
       .newTx()
       .readFrom([deployedValidators.poolValidator])
-      .payToAddressWithData(
-        poolAddress,
-        { inline: Data.to(poolDatumMapped, PoolSpend.datum) },
-        {
-          [toUnitOrLovelace(
-            poolDatumMapped.params.loanCs.policyId,
-            poolDatumMapped.params.loanCs.assetName
-          )]: poolDatumMapped.balance,
-          [toUnit(validators.poolScriptHash, poolTokenName)]: BigInt(1),
-        }
-      )
       .readFrom([poolArtifacts.configUTxO])
+
       .collectFrom(
         [poolArtifacts.poolUTxO],
         Data.to(poolRedeemer, PoolSpend.redeemer)
       )
-
+      .payToContract(
+        poolAddress,
+        {
+          inline: Data.to(poolDatumMapped, PoolSpend.datum),
+        },
+        valueToRepay
+      )
       .mintAssets(
         {
           [toUnit(
             poolDatumMapped.params.lpToken.policyId,
             poolDatumMapped.params.lpToken.assetName
-          )]: BigInt(lpTokensToReceive),
+          )]: BigInt(lpsToBurn) * -1n,
         },
         Data.to(lpTokenRedeemer, LiquidityTokenLiquidityToken.redeemer)
-      )
-      .attachMetadata(674, metadata);
+      );
 
     if (lpValidatorTxHash != null && lpValidatorTxOutput != null) {
       const validatorsUtxos = await lucid.utxosByOutRef([

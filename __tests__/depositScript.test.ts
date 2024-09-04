@@ -1,5 +1,5 @@
 import { Blockfrost, Lucid, TxComplete } from "lucid-cardano";
-import { createDeposit, DepositParams, DepositResult } from "./src";
+import { createDeposit, DepositParams, DepositResult } from "../src";
 import dotenv from "dotenv";
 const richAddress =
   "addr1qxk5nch3qxw606df505w7wgu4zqcs7na4976p9mx8sfhgwk9rql5ks69jqvtrn47gmy5galr0jdyc6cknq3pqp567s4q33t2ey";
@@ -30,8 +30,8 @@ describe("depositScript", () => {
       const depositParams: DepositParams = {
         lucid,
         balanceToDeposit: 51000000n,
-        poolTokenId:
-          "32e8c0ae314ef4be452c16a999867f66d1a1791fc972cb2f7c74e38d7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
+        poolTokenName:
+          "7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
         lpValidatorTxHash:
           "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
         lpValidatorTxOutput: 0,
