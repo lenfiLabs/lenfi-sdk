@@ -54,7 +54,7 @@ export interface LiquidateResult {
   tx?: TxComplete;
 }
 
-export async function liquidateLoan(
+export async function createLiquidation(
   params: LiquidateParams
 ): Promise<LiquidateResult> {
   const {

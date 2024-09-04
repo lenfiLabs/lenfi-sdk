@@ -1,24 +1,35 @@
 {
   "name": "lenfi-sdk",
-  "version": "1.0.0",
-  "description": "SDK for LenFi Finance",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "version": "0.0.5",
+  "author": "mandriuska",
+  "description": "SDK library to interact with Lenfi protocol.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lenfiLabs/lenfi-sdk.git"
+  },
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node --experimental-specifier-resolution=node --loader ts-node/esm depositScript.ts",
-    "test:deposit": "node --experimental-specifier-resolution=node --loader ts-node/esm depositScript.ts",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "start": "node --experimental-specifier-resolution=node --loader ts-node/esm src/depositScript.ts",
+    "test:deposit": "node --experimental-specifier-resolution=node --loader ts-node/esm src/depositScript.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "prepare-dist": "node scripts/prepare-dist.js",
+    "prepublishOnly": "npm run build && npm run prepare-dist"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "bignumber.js": "^9.1.2",
     "dotenv": "^16.4.5",
     "lucid-cardano": "^0.10.9"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
     "@types/jest": "^29.5.5",
     "@types/node": "^14.14.31",
     "jest": "^29.7.0",

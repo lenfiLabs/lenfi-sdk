@@ -1,5 +1,5 @@
 import {
-  liquidateLoan,
+  createLiquidation,
   LiquidateParams,
   LiquidateResult,
 } from "./../src/core/CreatePoolLiquidate";
@@ -68,7 +68,7 @@ describe("LiquidateScript", () => {
         collateralTokenPrice,
       };
 
-      const liquidateResult: LiquidateResult = await liquidateLoan(
+      const liquidateResult: LiquidateResult = await createLiquidation(
         liquidateParams
       );
 
