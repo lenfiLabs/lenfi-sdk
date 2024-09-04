@@ -12,19 +12,16 @@ import {
 } from "lucid-cardano";
 
 import {
-  aadaNftAction,
-  AggregatedAssets,
-  Asset,
   AssetClass,
-  asset,
-  AssetData,
-  BatcherDatumCommon,
   DeployedValidators,
   PriceFeed,
   OracelValidatorDetails,
   Validators,
   ValidityRange,
   TokenPrice,
+  ApiResponse,
+  FetchError,
+  InterestParams,
 } from "./../types";
 
 import {
@@ -45,6 +42,33 @@ import {
 } from "./../plutus";
 import BigNumber from "bignumber.js";
 import axios from "axios";
+
+export type OutputReference = {
+  transactionId: { hash: string };
+  outputIndex: bigint;
+};
+
+export const OutputReference = Object.assign({
+  title: "OutputReference",
+  dataType: "constructor",
+  index: 0,
+  fields: [
+    {
+      title: "transactionId",
+      description:
+        "A unique transaction identifier, as the hash of a transaction body. Note that the transaction id\n isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash\n digests of transaction body as they are serialized on the network.",
+      anyOf: [
+        {
+          title: "TransactionId",
+          dataType: "constructor",
+          index: 0,
+          fields: [{ dataType: "bytes", title: "hash" }],
+        },
+      ],
+    },
+    { dataType: "integer", title: "outputIndex" },
+  ],
+});
 
 // Lp tokens from deposit
 export function calculateReceivedLptokens(
@@ -83,57 +107,6 @@ export function calculateLpsToBurn(
   return Math.floor(lpTokensToBurn.toNumber());
 }
 
-export async function findAssetQuantity(
-  data: AssetData[],
-  assetPolicy: string,
-  assetName: string
-): Promise<number> {
-  if (assetPolicy === "") {
-    let assetQuantity: number = 0;
-
-    data.forEach((item) => {
-      if (item.assets.hasOwnProperty("lovelace")) {
-        assetQuantity += Number(item.assets["lovelace"]);
-      }
-    });
-
-    return assetQuantity;
-  } else {
-    let assetQuantity: number = 0;
-    const assetKey = toUnit(assetPolicy, assetName);
-    data.forEach((item) => {
-      if (item.assets.hasOwnProperty(assetKey)) {
-        assetQuantity += Number(item.assets[assetKey]);
-      }
-    });
-
-    return assetQuantity;
-  }
-}
-
-export function findAssetInUtxos(
-  transactions: UTxO[],
-  asset: string
-): UTxO | null {
-  for (let transaction of transactions) {
-    if (transaction.assets.hasOwnProperty(asset)) {
-      return transaction;
-    }
-  }
-  return null; // return null if no such asset is found
-}
-
-export function isBatcherDatumCommon(value: any): value is BatcherDatumCommon {
-  return value && value.batcherDatumType === 1;
-}
-
-export type InterestParams = {
-  optimalUtilization: bigint;
-  baseInterestRate: bigint;
-  rslope1: bigint;
-  rslope2: bigint;
-};
-
 // Returns interest rate in integer. Divide by 1000000 to get the actual interest rate.
 export function getInterestRates(
   interestParams: InterestParams,
@@ -141,8 +114,6 @@ export function getInterestRates(
   lentOut: bigint,
   balance: bigint
 ): bigint {
-  //log all params
-
   // These are parameters hardcoded into contract. It can be moved to referencable UTXO
   // in order to be updatable, but with the same validator hash
   const optimalUtilizationBN = new BigNumber(
@@ -263,10 +234,6 @@ export function calculateInterestAmount(
   }
 }
 
-export function filterUtxoByTxHash(txHash: string, utxos: UTxO[]) {
-  return utxos.filter((item) => item.txHash === txHash);
-}
-
 export function getValidityRange(lucid: Lucid): ValidityRange {
   const validFromInit = new Date().getTime() - 120000;
   const validToInit = new Date(validFromInit + 10 * 60 * 1000); // add 10 minutes (TTL: time to live);
@@ -300,28 +267,6 @@ export function parseValidators(json: any): DeployedValidators {
   }
   return validators;
 }
-
-
-export const purifiedAsset = (
-  policy_id: string,
-  asset_name: string
-): string => {
-  if (policy_id === "") {
-    return "lovelace";
-  } else {
-    return toUnit(policy_id, asset_name);
-  }
-};
-
-export type OutputReference = {
-  transactionId: { hash: string };
-  outputIndex: bigint;
-};
-
-export const dummyOutputRef: OutputReference = {
-  transactionId: { hash: "" },
-  outputIndex: BigInt(12),
-};
 
 export function collectValidators(
   lucid: Lucid,
@@ -403,107 +348,6 @@ export function collectValidators(
   };
 }
 
-export function createNftRedeemer(
-  action: aadaNftAction,
-  txHash: string,
-  outputIndex?: number
-): any {
-  switch (action) {
-    case "MintR":
-      if (outputIndex === undefined) {
-        throw new Error("outputIndex is required for MintR action");
-      }
-      return {
-        constructor: {
-          index: 0,
-          fields: [
-            {
-              constructor: {
-                index: 0,
-                fields: [
-                  {
-                    constructor: {
-                      index: 0,
-                      fields: [{ bytes: txHash }],
-                    },
-                  },
-                  { integer: outputIndex },
-                ],
-              },
-            },
-          ],
-        },
-      };
-    case "BurnR":
-      return {
-        constructor: {
-          index: 1,
-          fields: [{ bytes: txHash }],
-        },
-      };
-    default:
-      throw new Error("Unknown action: " + action);
-  }
-}
-// Calculated ADA needed to purchase this amount of loan tokens.
-export function calculateAdaNeededForPurchase(
-  amount_in_exchange: number, // TokenA in the pool
-  lovelaces: number, // TokenB (ADA) in the pool
-  buyAmount: number // Amount of TokenA to buy
-): BigNumber {
-  const tokenABalance = new BigNumber(amount_in_exchange);
-  const tokenBBalance = new BigNumber(lovelaces);
-  const buyAmountBN = new BigNumber(buyAmount);
-  const feeRate = new BigNumber(1).minus(0.003); // 0.3% fee rate
-
-  // Calculate the invariant (K)
-  const K = tokenABalance.times(tokenBBalance);
-
-  // Calculate new TokenA balance in the pool after the purchase
-  const newTokenABalance = tokenABalance.plus(buyAmountBN);
-
-  // Calculate new TokenB balance in the pool using the invariant
-  // Note: newTokenBBalance * newTokenABalance should be equal to K
-  const newTokenBBalance = K.dividedBy(newTokenABalance);
-
-  // Calculate the actual amount of TokenB (ADA) needed for the purchase
-  let tokenBSellAmount = tokenBBalance.minus(newTokenBBalance);
-
-  // Apply fee
-  tokenBSellAmount = tokenBSellAmount.times(feeRate);
-
-  // Return 0 if the calculation results in a negative number (unfeasible trade)
-  return tokenBSellAmount.isNegative() ? new BigNumber(0) : tokenBSellAmount;
-}
-
-export function calculateAdaReceivedFromSale(
-  amount_in_exchange: number, // TokenA in the pool
-  lovelaces: number, // TokenB (ADA) in the pool
-  sellAmount: number, // Amount of TokenA to sell
-  decimals: number // Number of decimals for the token.
-): BigNumber {
-  const tokenABalance = new BigNumber(amount_in_exchange); // Balance of TokenA in the pool
-  const tokenBBalance = new BigNumber(lovelaces); // Balance of TokenB (ADA) in the pool
-  const tokenASellAmount = new BigNumber(sellAmount); // Amount of TokenA to sell
-
-  const feeRate = new BigNumber(1).minus(0.003); // 0.3% fee rate
-  const tokenASellAmountAfterFee = tokenASellAmount.times(feeRate);
-
-  // Calculate the invariant (K)
-  const K = tokenABalance.times(tokenBBalance);
-
-  // Calculate new TokenA balance in the pool after the sale
-  const newTokenABalance = tokenABalance.plus(tokenASellAmountAfterFee);
-
-  // Calculate new TokenB (ADA) balance in the pool using the invariant
-  const newTokenBBalance = K.dividedBy(newTokenABalance);
-
-  // Calculate the actual amount of TokenB (ADA) received from the sale
-  let tokenBReceived = tokenBBalance.minus(newTokenBBalance);
-
-  return tokenBReceived.isNegative() ? new BigNumber(0) : tokenBReceived;
-}
-
 export async function getPoolArtifacts(
   poolTokenName: string,
   validators: Validators,
@@ -540,146 +384,12 @@ export async function getPoolArtifacts(
   };
 }
 
-export const mapAssets = (assets: asset[]): AggregatedAssets => {
-  const result = new Map<string, Map<string, bigint>>();
-  for (const deposit of assets) {
-    const { policyId, assetName, amount } = deposit;
-
-    let assetMap = result.get(policyId);
-    if (!assetMap) {
-      assetMap = new Map<string, bigint>();
-      result.set(policyId, assetMap);
-    }
-
-    let currentAmount = assetMap.get(assetName) || BigInt(0);
-    currentAmount += BigInt(amount);
-    assetMap.set(assetName, currentAmount);
-  }
-
-  // Sort by policyId, assetName and then amount
-  const sortedResult = new Map<string, Map<string, bigint>>(
-    [...result.entries()].sort()
-  );
-
-  for (const [policyId, assetMap] of sortedResult) {
-    const sortedAssetMap = new Map<string, bigint>(
-      [...assetMap.entries()].sort()
-    );
-    sortedResult.set(policyId, sortedAssetMap);
-  }
-
-  return sortedResult;
-};
-
-export const MIN_ADA = 2000000n;
-
-export function constructValueWithMinAda(
-  value: Map<string, Map<string, bigint>>
-) {
-  const adaAmount = value.get("")?.get("") || 0n;
-  if (adaAmount < MIN_ADA) {
-    const newValue = new Map<string, Map<string, bigint>>();
-    newValue.set("", new Map([["", MIN_ADA]]));
-    for (const [policyId, assetMap] of value) {
-      for (const [assetName, amount] of assetMap) {
-        if (policyId === "") {
-          continue;
-        }
-        newValue.set(policyId, new Map([[assetName, amount]]));
-      }
-    }
-    return newValue;
-  }
-
-  return value;
-}
-
 export function toUnitOrLovelace(policyId: PolicyId, assetName?: string): Unit {
   if (policyId + assetName === "") {
     return "lovelace";
   }
   return toUnit(policyId, assetName);
 }
-
-export type OutputValue = { [key: string]: bigint };
-export function updateUserValue(
-  userValues: OutputValue,
-  newValue: OutputValue
-): OutputValue {
-  // Merge and sum values for existing keys, or add new keys
-  for (const [newKey, newVal] of Object.entries(newValue)) {
-    userValues[newKey] = (userValues[newKey] || 0n) + newVal;
-  }
-
-  // Create a new object with keys sorted, placing 'lovelace' first
-  const sortedUserValues: OutputValue = {};
-  const keys = Object.keys(userValues).sort((a, b) => {
-    if (a === "lovelace") return -1;
-    if (b === "lovelace") return 1;
-    return a.localeCompare(b);
-  });
-
-  keys.forEach((key) => {
-    sortedUserValues[key] = userValues[key];
-  });
-
-  return sortedUserValues;
-}
-
-type AggregatedDeposits = Map<string, Map<string, bigint>>;
-
-export const aggregateDeposits = (deposits: Asset[]): AggregatedDeposits => {
-  const result = new Map<string, Map<string, bigint>>();
-  for (const deposit of deposits) {
-    const { policyId, assetName, amount } = deposit;
-
-    let assetMap = result.get(policyId);
-    if (!assetMap) {
-      assetMap = new Map<string, bigint>();
-      result.set(policyId, assetMap);
-    }
-
-    let currentAmount = assetMap.get(assetName) || BigInt(0);
-    currentAmount += BigInt(amount);
-    assetMap.set(assetName, currentAmount);
-  }
-
-  // Sort by policyId, assetName and then amount
-  const sortedResult = new Map<string, Map<string, bigint>>(
-    [...result.entries()].sort()
-  );
-
-  for (const [policyId, assetMap] of sortedResult) {
-    const sortedAssetMap = new Map<string, bigint>(
-      [...assetMap.entries()].sort()
-    );
-    sortedResult.set(policyId, sortedAssetMap);
-  }
-
-  return sortedResult;
-};
-
-export const OutputReference = Object.assign({
-  title: "OutputReference",
-  dataType: "constructor",
-  index: 0,
-  fields: [
-    {
-      title: "transactionId",
-      description:
-        "A unique transaction identifier, as the hash of a transaction body. Note that the transaction id\n isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash\n digests of transaction body as they are serialized on the network.",
-      anyOf: [
-        {
-          title: "TransactionId",
-          dataType: "constructor",
-          index: 0,
-          fields: [{ dataType: "bytes", title: "hash" }],
-        },
-      ],
-    },
-    { dataType: "integer", title: "outputIndex" },
-  ],
-});
 
 export function nameFromUTxO(utxo: UTxO) {
   const { hash_blake2b256 } = C;
@@ -694,26 +404,17 @@ export function nameFromUTxO(utxo: UTxO) {
   return assetName;
 }
 
-export interface ApiResponse {
-  signature: string; // Adjust according to your actual API response structure
-}
-
-export interface FetchError {
-  error: string;
-  details: any;
-}
-
 export const fetchDataFromEndpoints = async (
   apiEndpoints: string[],
   requestData: any
 ): Promise<Array<ApiResponse | FetchError>> => {
   const fetchPromises = apiEndpoints.map((url) =>
     axios
-      .post(url, requestData) // Use axios.post to send the request
-      .then((response) => response.data as ApiResponse) // Access the response data directly
+      .post(url, requestData)
+      .then((response) => response.data as ApiResponse)
       .catch((error) => ({
         error: `Failed to fetch from ${url}`,
-        details: error.response ? error.response.data : error.message, // Provide more detailed error info
+        details: error.response ? error.response.data : error.message,
       }))
   );
 

@@ -107,11 +107,11 @@ export async function fetchUncachedTokenPrice(
     const response: TokenPrice = {
       accepted_as_collateral: true,
       accepted_as_loan: true,
-      amount_in_exchange: 976735151306,
+      amount_in_exchange: 976411396236,
       decimals: "6",
       initial_collateral_ratio: 2200000,
       liquidation_threshold: 2000000,
-      lovelaces: 1328217069644,
+      lovelaces: 1328657010255,
       token_id:
         "8fef2d34078659493ce161a6c7fba4b56afefa8535296a5743f6958741414441",
       token_name: "41414441",

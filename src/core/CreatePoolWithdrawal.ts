@@ -23,8 +23,8 @@ export interface WithdrawParams {
   lucid: Lucid;
   amountToWithdraw: bigint;
   poolTokenName: string;
-  lpValidatorTxHash: string;
-  lpValidatorTxOutput: number;
+  lpValidatorTxHash?: string;
+  lpValidatorTxOutput?: number;
 }
 
 export interface WithdrawResult {
@@ -64,6 +64,10 @@ export async function createWithdrawal(
 
     const poolDatumMapped = poolArtifacts.poolDatumMapped;
     const poolConfigDatum = poolArtifacts.poolConfigDatum;
+
+    if (amountToWithdraw < poolConfigDatum.minTransition) {
+      throw new Error("Protocol does not allow this small withdrawal");
+    }
 
     let lpsToBurn = calculateLpsToBurn(
       poolDatumMapped.balance,

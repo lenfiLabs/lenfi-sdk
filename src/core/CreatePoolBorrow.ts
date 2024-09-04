@@ -77,7 +77,7 @@ export async function createLoan(params: BorrowParams): Promise<BorrowResult> {
     const poolConfigDatum = poolArtifacts.poolConfigDatum;
 
     if (loanAmount < poolConfigDatum.minLoan) {
-      throw new Error("Loan amount is too low");
+      throw new Error("Protocol does not allow this small loan amount");
     }
 
     let interestRate = getInterestRates(

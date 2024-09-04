@@ -16,8 +16,8 @@ export interface DepositParams {
   lucid: Lucid;
   balanceToDeposit: bigint;
   poolTokenName: string;
-  lpValidatorTxHash: string;
-  lpValidatorTxOutput: number;
+  lpValidatorTxHash?: string;
+  lpValidatorTxOutput?: number;
 }
 
 export interface DepositResult {
@@ -57,6 +57,11 @@ export async function createDeposit(
 
     const poolDatumMapped = poolArtifacts.poolDatumMapped;
     const poolConfigDatum = poolArtifacts.poolConfigDatum;
+
+
+    if (balanceToDeposit < poolConfigDatum.minTransition) {
+      throw new Error("Protocol does not allow this small deposit");
+    }
 
     const lpTokensToReceive: number = calculateReceivedLptokens(
       poolDatumMapped.balance,
