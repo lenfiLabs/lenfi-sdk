@@ -22,6 +22,7 @@ import {
   ApiResponse,
   FetchError,
   InterestParams,
+  OutputValue,
 } from "./../types";
 
 import {
@@ -42,6 +43,7 @@ import {
 } from "./../plutus";
 import BigNumber from "bignumber.js";
 import axios from "axios";
+import { MIN_ADA } from "../constants";
 
 export type OutputReference = {
   transactionId: { hash: string };
@@ -684,4 +686,102 @@ export function getAdaAmountIfSold(
   } else {
     throw "Invalid price feed data";
   }
+}
+
+export function updateUserValue(
+  userValues: OutputValue,
+  newValue: OutputValue
+): OutputValue {
+  // Merge and sum values for existing keys, or add new keys
+  for (const [newKey, newVal] of Object.entries(newValue)) {
+    userValues[newKey] = (userValues[newKey] || 0n) + newVal;
+  }
+
+  // Create a new object with keys sorted, placing 'lovelace' first
+  const sortedUserValues: OutputValue = {};
+  const keys = Object.keys(userValues).sort((a, b) => {
+    if (a === "lovelace") return -1;
+    if (b === "lovelace") return 1;
+    return a.localeCompare(b);
+  });
+
+  keys.forEach((key) => {
+    sortedUserValues[key] = userValues[key];
+  });
+
+  return sortedUserValues;
+}
+
+export function constructValueWithMinAda(
+  value: Map<string, Map<string, bigint>>
+) {
+  const adaAmount = value.get("")?.get("") || 0n;
+  if (adaAmount < MIN_ADA) {
+    const newValue = new Map<string, Map<string, bigint>>();
+    newValue.set("", new Map([["", MIN_ADA]]));
+    for (const [policyId, assetMap] of value) {
+      for (const [assetName, amount] of assetMap) {
+        if (policyId === "") {
+          continue;
+        }
+        newValue.set(policyId, new Map([[assetName, amount]]));
+      }
+    }
+    return newValue;
+  }
+
+  return value;
+}
+
+export async function findAssetQuantity(
+  data: UTxO[],
+  assetPolicy: string,
+  assetName: string
+): Promise<number> {
+  if (assetPolicy == "") {
+    let assetQuantity: number = 0;
+
+    data.forEach((item) => {
+      if (item.assets.hasOwnProperty("lovelace")) {
+        assetQuantity += Number(item.assets["lovelace"]);
+      }
+    });
+
+    return assetQuantity;
+  } else {
+    let assetQuantity: number = 0;
+    const assetKey = toUnit(assetPolicy, assetName);
+    data.forEach((item) => {
+      if (item.assets.hasOwnProperty(assetKey)) {
+        assetQuantity += Number(item.assets[assetKey]);
+      }
+    });
+
+    return assetQuantity;
+  }
+}
+
+export function getValueFromMap<K, V>(
+  map: Map<string, Map<string, V>>,
+  policy: string,
+  assetName: string
+): V | null {
+  const nestedMap = map.get(policy);
+  if (nestedMap) {
+    return nestedMap.get(assetName) || null;
+  }
+  return null;
+}
+
+
+export function getExpectedValueMap(value: Map<string, Map<string, bigint>>) {
+  const toReceive: { [assetId: string]: bigint } = {};
+
+  for (const [policyId, assetMap] of value) {
+    for (const [assetName, amount] of assetMap) {
+      toReceive[toUnitOrLovelace(policyId, assetName)] = amount;
+    }
+  }
+
+  return toReceive;
 }

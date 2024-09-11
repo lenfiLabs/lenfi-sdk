@@ -18,7 +18,7 @@ import {
   parseValidators,
   toUnitOrLovelace,
 } from "../utils/helpers";
-import { DeployedValidators, ValidityRange } from "../types";
+import { BuilderResponse, DeployedValidators, ValidityRange } from "../types";
 import { CollateralMint, CollateralSpend, PoolSpend } from "../plutus";
 
 export interface RepayParams {
@@ -29,13 +29,7 @@ export interface RepayParams {
   loanTxOutputIndex: number;
 }
 
-export interface RepayResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
-
-export async function repayLoan(params: RepayParams): Promise<RepayResult> {
+export async function repayLoan(params: RepayParams): Promise<BuilderResponse> {
   const { lucid, validityRange, poolTokenName, loanTxHash, loanTxOutputIndex } =
     params;
 

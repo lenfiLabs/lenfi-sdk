@@ -23,6 +23,7 @@ import {
   toUnitOrLovelace,
 } from "../utils/helpers";
 import {
+  BuilderResponse,
   DeployedValidators,
   OracelValidatorDetails,
   PriceFeed,
@@ -48,15 +49,9 @@ export interface LiquidateParams {
   loanTokenPrice: TokenPrice | undefined;
 }
 
-export interface LiquidateResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
-
 export async function createLiquidation(
   params: LiquidateParams
-): Promise<LiquidateResult> {
+): Promise<BuilderResponse> {
   const {
     lucid,
     validityRange,

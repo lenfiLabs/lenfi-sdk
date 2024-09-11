@@ -12,6 +12,7 @@ import {
   toUnitOrLovelace,
 } from "../utils/helpers";
 import {
+  BuilderResponse,
   DeployedValidators,
   OracelValidatorDetails,
   TokenPrice,
@@ -34,13 +35,8 @@ export interface BorrowParams {
   loanTokenPrice: TokenPrice | undefined;
 }
 
-export interface BorrowResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
 
-export async function createLoan(params: BorrowParams): Promise<BorrowResult> {
+export async function createLoan(params: BorrowParams): Promise<BuilderResponse> {
   const {
     lucid,
     loanAmount,

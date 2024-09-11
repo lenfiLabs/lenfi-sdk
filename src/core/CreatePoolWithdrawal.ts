@@ -16,7 +16,7 @@ import {
   parseValidators,
   toUnitOrLovelace,
 } from "../utils/helpers";
-import { DeployedValidators } from "../types";
+import { BuilderResponse, DeployedValidators } from "../types";
 import { LiquidityTokenLiquidityToken, PoolSpend } from "../plutus";
 
 export interface WithdrawParams {
@@ -27,15 +27,9 @@ export interface WithdrawParams {
   lpValidatorTxOutput?: number;
 }
 
-export interface WithdrawResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
-
 export async function createWithdrawal(
   params: WithdrawParams
-): Promise<WithdrawResult> {
+): Promise<BuilderResponse> {
   const {
     lucid,
     amountToWithdraw,

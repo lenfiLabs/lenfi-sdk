@@ -1,4 +1,8 @@
-import { createWithdrawal, WithdrawParams } from './../src/core/CreatePoolWithdrawal';
+import {
+  BatcherWithdrawParams,
+  createBatcherWithdraw,
+} from "../src/batcher/CreateBatcherWithdraw";
+
 import { Blockfrost, Lucid } from "lucid-cardano";
 
 import dotenv from "dotenv";
@@ -8,8 +12,8 @@ const emptyAddress =
   "addr1qxc7m9mn3tqk92leqyr0g5v7lx7fgt5mkdw3xw8lr2lfjnqa7awytlua5w7u9t60wjads0t40x9rpmwmk9qydgjms3yqnadgt5";
 dotenv.config();
 
-describe("withdrawalScript", () => {
-  const testWitdhrawal = async (address: string) => {
+describe("batcherWithdrawScript", () => {
+  const testWithdraw = async (address: string) => {
     it(`should handle withdraw for address: ${address}`, async () => {
       const blockfrostApiKey = process.env.BLOCKFROST_API_KEY;
       if (!blockfrostApiKey) {
@@ -28,17 +32,14 @@ describe("withdrawalScript", () => {
 
       lucid.selectWalletFrom({ address });
 
-      const withdrawParams: WithdrawParams = {
+      const depositParams: BatcherWithdrawParams = {
         lucid,
-        amountToWithdraw: 51000000n,
+        amountToWithdraw: 51_000_000n,
         poolTokenName:
           "7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
-        lpValidatorTxHash:
-          "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
-        lpValidatorTxOutput: 0,
       };
 
-      const withdrawResult = await createWithdrawal(withdrawParams);
+      const withdrawResult = await createBatcherWithdraw(depositParams);
 
       // Assert that depositResult is defined
       expect(withdrawResult).toBeDefined();
@@ -51,20 +52,18 @@ describe("withdrawalScript", () => {
         if (withdrawResult.tx) {
           expect(typeof withdrawResult.tx.toString).toBe("function");
         } else {
-          fail("Expected withdrawResult.tx to be defined for richAddress");
+          fail("Expected depositResult.tx to be defined for richAddress");
         }
       } else if (address === emptyAddress) {
         // For emptyAddress, we expect an unsuccessful transaction
         expect(withdrawResult.success).toBe(false);
-        expect(withdrawResult.error).toBe(
-          "Missing input or output for some native asset"
-        );
+        expect(withdrawResult.error).toBe("Insufficient input in transaction");
         expect(withdrawResult.tx).toBeUndefined();
       }
     });
   };
 
   // Run tests for both addresses
-  testWitdhrawal(richAddress);
-  testWitdhrawal(emptyAddress);
+  testWithdraw(richAddress);
+  testWithdraw(emptyAddress);
 });

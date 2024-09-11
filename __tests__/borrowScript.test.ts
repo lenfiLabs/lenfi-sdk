@@ -1,9 +1,5 @@
 import { TokenPrice } from "./../src/types";
-import {
-  BorrowParams,
-  BorrowResult,
-  createLoan,
-} from "./../src/core/CreatePoolBorrow";
+import { BorrowParams, createLoan } from "./../src/core/CreatePoolBorrow";
 import { Blockfrost, Lucid } from "lucid-cardano";
 
 import dotenv from "dotenv";
@@ -66,7 +62,7 @@ describe("BorrowScript", () => {
         loanTokenPrice,
       };
 
-      const borrowResult: BorrowResult = await createLoan(borrowParams);
+      const borrowResult = await createLoan(borrowParams);
 
       // Assert that depositResult is defined
       expect(borrowResult).toBeDefined();
@@ -102,16 +98,14 @@ export async function fetchUncachedTokenPrice(
   tokenId: string
 ): Promise<TokenPrice | undefined> {
   try {
-    // If tokenId is provided, fetch the specific token price
-
     const response: TokenPrice = {
       accepted_as_collateral: true,
       accepted_as_loan: true,
-      amount_in_exchange: 976411396236,
+      amount_in_exchange: 960036887586,
       decimals: "6",
       initial_collateral_ratio: 2200000,
       liquidation_threshold: 2000000,
-      lovelaces: 1328657010255,
+      lovelaces: 1235999558669,
       token_id:
         "8fef2d34078659493ce161a6c7fba4b56afefa8535296a5743f6958741414441",
       token_name: "41414441",

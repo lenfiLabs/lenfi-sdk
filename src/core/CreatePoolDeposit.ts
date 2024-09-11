@@ -1,4 +1,4 @@
-import { Data, Lucid, Credential, toUnit, TxComplete } from "lucid-cardano";
+import { Data, Lucid, Credential, toUnit } from "lucid-cardano";
 import deployedValidatorsJson from "./../deployedValidators.json" assert { type: "json" };
 import { GOV_TOKEN_NAME } from "./../constants";
 import {
@@ -9,7 +9,7 @@ import {
   parseValidators,
   toUnitOrLovelace,
 } from "./../utils/helpers";
-import { DeployedValidators } from "./../types";
+import { BuilderResponse, DeployedValidators } from "./../types";
 import { LiquidityTokenLiquidityToken, PoolSpend } from "./../plutus";
 
 export interface DepositParams {
@@ -20,15 +20,9 @@ export interface DepositParams {
   lpValidatorTxOutput?: number;
 }
 
-export interface DepositResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
-
 export async function createDeposit(
   params: DepositParams
-): Promise<DepositResult> {
+): Promise<BuilderResponse> {
   const {
     lucid,
     balanceToDeposit,
@@ -57,7 +51,6 @@ export async function createDeposit(
 
     const poolDatumMapped = poolArtifacts.poolDatumMapped;
     const poolConfigDatum = poolArtifacts.poolConfigDatum;
-
 
     if (balanceToDeposit < poolConfigDatum.minTransition) {
       throw new Error("Protocol does not allow this small deposit");
@@ -98,9 +91,6 @@ export async function createDeposit(
       },
     };
 
-    let metadata = {
-      msg: ["Lenfi: DEPOSITED to pool."],
-    };
 
     const deployedValidators: DeployedValidators = parseValidators(
       deployedValidatorsJson
@@ -135,7 +125,6 @@ export async function createDeposit(
         },
         Data.to(lpTokenRedeemer, LiquidityTokenLiquidityToken.redeemer)
       )
-      .attachMetadata(674, metadata);
 
     if (lpValidatorTxHash != null && lpValidatorTxOutput != null) {
       const validatorsUtxos = await lucid.utxosByOutRef([
