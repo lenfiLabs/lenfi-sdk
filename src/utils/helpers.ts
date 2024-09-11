@@ -23,6 +23,7 @@ import {
   FetchError,
   InterestParams,
   OutputValue,
+  StakeCredential,
 } from "./../types";
 
 import {
@@ -688,7 +689,7 @@ export function getAdaAmountIfSold(
   }
 }
 
-export function updateUserValue(
+export function addAssets(
   userValues: OutputValue,
   newValue: OutputValue
 ): OutputValue {
@@ -773,7 +774,6 @@ export function getValueFromMap<K, V>(
   return null;
 }
 
-
 export function getExpectedValueMap(value: Map<string, Map<string, bigint>>) {
   const toReceive: { [assetId: string]: bigint } = {};
 
@@ -784,4 +784,34 @@ export function getExpectedValueMap(value: Map<string, Map<string, bigint>>) {
   }
 
   return toReceive;
+}
+
+export function getWalletStakeCredentials(
+  walletDetails: any
+): StakeCredential | null {
+  if (!walletDetails.stakeCredential) {
+    return null;
+  }
+
+  const { type, hash } = walletDetails.stakeCredential;
+
+  if (type === "Key") {
+    return {
+      Inline: [
+        {
+          VerificationKeyCredential: [hash],
+        },
+      ],
+    };
+  } else if (type === "Script") {
+    return {
+      Inline: [
+        {
+          ScriptCredential: [hash],
+        },
+      ],
+    };
+  }
+
+  return null;
 }

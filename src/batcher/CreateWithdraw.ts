@@ -5,9 +5,10 @@ import {
   collectValidators,
   getPoolArtifacts,
   toUnitOrLovelace,
-  updateUserValue,
+  addAssets,
+  getWalletStakeCredentials,
 } from "../utils/helpers";
-import { BuilderResponse, OutputValue, StakeCredential } from "../types";
+import { BuilderResponse, OutputValue } from "../types";
 import { OrderContractWithdrawOrderContract } from "../plutus";
 
 export interface BatcherWithdrawParams {
@@ -50,29 +51,7 @@ export async function createBatcherWithdraw(
     const walletAddress = await lucid.wallet.address();
     const walletDetails = getAddressDetails(walletAddress);
 
-    let stakeCredentials: StakeCredential | null = null;
-
-    if (walletDetails["stakeCredential"]) {
-      if (walletDetails["stakeCredential"]["type"] === "Key") {
-        stakeCredentials = {
-          Inline: [
-            {
-              VerificationKeyCredential: [
-                walletDetails["stakeCredential"]["hash"],
-              ],
-            },
-          ],
-        };
-      } else if (walletDetails["stakeCredential"]["type"] === "Script") {
-        stakeCredentials = {
-          Inline: [
-            {
-              ScriptCredential: [walletDetails["stakeCredential"]["hash"]],
-            },
-          ],
-        };
-      }
-    }
+    const walletStakeCredentials = getWalletStakeCredentials(walletDetails);
 
     const batcherDatum: OrderContractWithdrawOrderContract["datum"] = {
       controlCredential: {
@@ -92,7 +71,7 @@ export async function createBatcherWithdraw(
                 walletDetails.paymentCredential!.hash,
               ],
             },
-            stakeCredential: stakeCredentials,
+            stakeCredential: walletStakeCredentials,
           },
           value: new Map([["", new Map([["", BigInt(2000000)]])]]),
           datum: "NoDatum",
@@ -123,11 +102,11 @@ export async function createBatcherWithdraw(
       const poolFee = {
         [assetName]: BigInt(poolArtifacts.poolConfigDatum.poolFee),
       };
-      valueSendToBatcher = updateUserValue(valueSendToBatcher, poolFee);
+      valueSendToBatcher = addAssets(valueSendToBatcher, poolFee);
     }
 
     // Add new value to the datum value
-    valueSendToBatcher = updateUserValue(valueSendToBatcher, withdrawValue);
+    valueSendToBatcher = addAssets(valueSendToBatcher, withdrawValue);
 
     const completedTx = await lucid
       .newTx()

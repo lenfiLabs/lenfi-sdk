@@ -1,4 +1,3 @@
-import { ValidityRange } from "../../dist/src/types";
 import { Credential, Data, Lucid, UTxO, toUnit } from "lucid-cardano";
 import deployedValidatorsJson from "../deployedValidators.json" assert { type: "json" };
 import { GOV_TOKEN_NAME } from "../constants";
@@ -11,7 +10,7 @@ import {
   parseValidators,
   toUnitOrLovelace,
 } from "../utils/helpers";
-import { BuilderResponse, DeployedValidators } from "../types";
+import { BuilderResponse, DeployedValidators, ValidityRange } from "../types";
 import { CollateralMint, CollateralSpend, DelayedMergeSpend } from "../plutus";
 
 export interface BatcherRepayParams {

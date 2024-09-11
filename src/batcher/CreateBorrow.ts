@@ -7,12 +7,12 @@ import {
   getInterestRates,
   getPoolArtifacts,
   toUnitOrLovelace,
-  updateUserValue,
+  addAssets,
+  getWalletStakeCredentials,
 } from "../utils/helpers";
 import {
   BuilderResponse,
   OutputValue,
-  StakeCredential,
   TokenPrice,
   ValidityRange,
 } from "../types";
@@ -65,30 +65,7 @@ export async function createBatcherBorrow(
     const walletAddress = await lucid.wallet.address();
     const walletDetails = getAddressDetails(walletAddress);
 
-    let walletStakeCredentials: StakeCredential | null = null;
-
-    // Check below if the wallet is a script or a key
-    if (walletDetails["stakeCredential"]) {
-      if (walletDetails["stakeCredential"]["type"] === "Key") {
-        walletStakeCredentials = {
-          Inline: [
-            {
-              VerificationKeyCredential: [
-                walletDetails["stakeCredential"]["hash"],
-              ],
-            },
-          ],
-        };
-      } else if (walletDetails["stakeCredential"]["type"] === "Script") {
-        walletStakeCredentials = {
-          Inline: [
-            {
-              ScriptCredential: [walletDetails["stakeCredential"]["hash"]],
-            },
-          ],
-        };
-      }
-    }
+    const walletStakeCredentials = getWalletStakeCredentials(walletDetails);
 
     const expectedOutput = new Map([
       [
@@ -158,7 +135,7 @@ export async function createBatcherBorrow(
     }
     let valueSendToBatcher: OutputValue = { lovelace: batcherDeposit };
 
-    valueSendToBatcher = updateUserValue(valueSendToBatcher, depositValue);
+    valueSendToBatcher = addAssets(valueSendToBatcher, depositValue);
 
     if (poolArtifacts.poolConfigDatum.poolFee > 0n) {
       const poolFee = {
@@ -167,7 +144,7 @@ export async function createBatcherBorrow(
           poolDatumMapped.params.loanCs.assetName
         )]: BigInt(poolArtifacts.poolConfigDatum.poolFee),
       };
-      valueSendToBatcher = updateUserValue(valueSendToBatcher, poolFee);
+      valueSendToBatcher = addAssets(valueSendToBatcher, poolFee);
     }
 
     let tx = lucid.newTx().payToContract(

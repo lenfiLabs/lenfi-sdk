@@ -13,7 +13,7 @@ import {
   nameFromUTxO,
   parseValidators,
   toUnitOrLovelace,
-  updateUserValue,
+  addAssets,
 } from "../utils/helpers";
 import {
   BatcherOutput,
@@ -254,7 +254,7 @@ export async function executeBatcherBorrow(
       }
     }
     // Add new value to the datum value
-    valueForUserToReceive = updateUserValue(valueForUserToReceive, toReceive);
+    valueForUserToReceive = addAssets(valueForUserToReceive, toReceive);
 
     const receiverDetails: BatcherOutput[] = [
       {
