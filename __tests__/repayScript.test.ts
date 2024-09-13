@@ -1,7 +1,6 @@
 import {
   repayLoan,
   RepayParams,
-  RepayResult,
 } from "./../src/core/CreatePoolRepay";
 import { Blockfrost, Lucid } from "lucid-cardano";
 
@@ -46,7 +45,7 @@ describe("RepayScript", () => {
         loanTxOutputIndex: 1,
       };
 
-      const repayResult: RepayResult = await repayLoan(repayParams);
+      const repayResult = await repayLoan(repayParams);
 
       // Assert that depositResult is defined
       expect(repayResult).toBeDefined();

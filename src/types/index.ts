@@ -1,6 +1,9 @@
-import BigNumber from "bignumber.js";
-import { UTxO } from "lucid-cardano";
-import { OracleValidatorWithdrawValidate, PoolSpend } from "../plutus";
+import { PolicyId, TxComplete, UTxO } from "lucid-cardano";
+import {
+  OracleValidatorWithdrawValidate,
+  OrderContractBorrowOrderContract,
+  OrderContractRepayOrderContract,
+} from "../plutus";
 import { collectValidators } from "./../utils/helpers";
 export interface TokenPrice {
   accepted_as_collateral: boolean;
@@ -128,4 +131,53 @@ export interface ApiResponse {
 export interface FetchError {
   error: string;
   details: any;
+}
+
+export type OutputValue = { [key: string]: bigint };
+
+export interface BuilderResponse {
+  success: boolean;
+  error?: string;
+  tx?: TxComplete;
+}
+
+export type BatcherOutput = {
+  receiverAddress: string;
+  datum:
+    | {
+        inline: string; // datum is an object with an 'inline' property, which is a string
+      }
+    | "";
+  value: OutputValue;
+};
+
+type AssetName = string;
+type Amount = bigint;
+
+export function getValueFromMapBorrow(
+  batcherDatum:
+    | OrderContractBorrowOrderContract["datum"]
+    | OrderContractRepayOrderContract["datum"],
+  targetPolicyId: PolicyId,
+  targetAssetName: AssetName
+): bigint | null {
+  const valueMap: Map<PolicyId, Map<AssetName, Amount>> | undefined =
+    batcherDatum?.order?.expectedOutput?.value;
+
+  if (!valueMap) {
+    return null;
+  }
+
+  for (const [policyId, assetMap] of valueMap.entries()) {
+    if (policyId === targetPolicyId) {
+      for (const [assetName, amount] of assetMap.entries()) {
+        if (assetName === targetAssetName) {
+          // Returns the first found amount that matches policyId and assetName.
+          return amount;
+        }
+      }
+    }
+  }
+
+  return null;
 }

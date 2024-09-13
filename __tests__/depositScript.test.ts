@@ -1,5 +1,5 @@
-import { Blockfrost, Lucid, TxComplete } from "lucid-cardano";
-import { createDeposit, DepositParams, DepositResult } from "../src";
+import { Blockfrost, Lucid } from "lucid-cardano";
+import { createDeposit, DepositParams } from "../src";
 import dotenv from "dotenv";
 const richAddress =
   "addr1qxk5nch3qxw606df505w7wgu4zqcs7na4976p9mx8sfhgwk9rql5ks69jqvtrn47gmy5galr0jdyc6cknq3pqp567s4q33t2ey";
@@ -37,7 +37,7 @@ describe("depositScript", () => {
         lpValidatorTxOutput: 0,
       };
 
-      const depositResult: DepositResult = await createDeposit(depositParams);
+      const depositResult = await createDeposit(depositParams);
 
       // Assert that depositResult is defined
       expect(depositResult).toBeDefined();

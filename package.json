@@ -1,6 +1,6 @@
 {
   "name": "lenfi-sdk",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "mandriuska",
   "description": "SDK library to interact with Lenfi protocol.",
   "main": "dist/index.js",

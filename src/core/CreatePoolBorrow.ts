@@ -12,6 +12,7 @@ import {
   toUnitOrLovelace,
 } from "../utils/helpers";
 import {
+  BuilderResponse,
   DeployedValidators,
   OracelValidatorDetails,
   TokenPrice,
@@ -34,13 +35,24 @@ export interface BorrowParams {
   loanTokenPrice: TokenPrice | undefined;
 }
 
-export interface BorrowResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
+/**
+ * Creates a loan transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for creating a loan.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {bigint} params.loanAmount - The amount of tokens to borrow.
+ * @param {bigint} params.collateralAmount - The amount of collateral to provide for the loan.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {TokenPrice} params.collateralTokenPrice - The price information for the collateral token.
+ * @param {TokenPrice} params.loanTokenPrice - The price information for the loan token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the loan amount is below the minimum allowed by the protocol.
+ */
 
-export async function createLoan(params: BorrowParams): Promise<BorrowResult> {
+export async function createLoan(params: BorrowParams): Promise<BuilderResponse> {
   const {
     lucid,
     loanAmount,

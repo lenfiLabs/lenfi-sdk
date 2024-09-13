@@ -23,6 +23,7 @@ import {
   toUnitOrLovelace,
 } from "../utils/helpers";
 import {
+  BuilderResponse,
   DeployedValidators,
   OracelValidatorDetails,
   PriceFeed,
@@ -48,15 +49,24 @@ export interface LiquidateParams {
   loanTokenPrice: TokenPrice | undefined;
 }
 
-export interface LiquidateResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
+/**
+ * Creates a liquidation transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for liquidating a loan.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {string} params.loanTxHash - The transaction hash of the loan to be liquidated.
+ * @param {number} params.loanTxOutputIndex - The output index of the loan in the transaction.
+ * @param {TokenPrice} params.collateralTokenPrice - The price information for the collateral token.
+ * @param {TokenPrice} params.loanTokenPrice - The price information for the loan token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ */
 
 export async function createLiquidation(
   params: LiquidateParams
-): Promise<LiquidateResult> {
+): Promise<BuilderResponse> {
   const {
     lucid,
     validityRange,

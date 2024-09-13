@@ -1,4 +1,4 @@
-import { Data, Lucid, Credential, toUnit, TxComplete } from "lucid-cardano";
+import { Data, Lucid, Credential, toUnit } from "lucid-cardano";
 import deployedValidatorsJson from "./../deployedValidators.json" assert { type: "json" };
 import { GOV_TOKEN_NAME } from "./../constants";
 import {
@@ -9,7 +9,7 @@ import {
   parseValidators,
   toUnitOrLovelace,
 } from "./../utils/helpers";
-import { DeployedValidators } from "./../types";
+import { BuilderResponse, DeployedValidators } from "./../types";
 import { LiquidityTokenLiquidityToken, PoolSpend } from "./../plutus";
 
 export interface DepositParams {
@@ -20,15 +20,33 @@ export interface DepositParams {
   lpValidatorTxOutput?: number;
 }
 
-export interface DepositResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
+/**
+ * Creates a deposit transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for creating a deposit.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {bigint} params.balanceToDeposit - The amount of tokens to deposit into the pool.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {string} [params.lpValidatorTxHash] - Optional. The transaction hash where the LP validator script is stored for reference.
+ * @param {number} [params.lpValidatorTxOutput] - Optional. The transaction output index where the LP validator script is stored for reference. 
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the deposit amount is below the minimum allowed by the protocol.
+ * 
+ * @example
+ * const depositResult = await createDeposit({
+ *   lucid: lucidInstance,
+ *   balanceToDeposit: 1000000n,
+ *   poolTokenName: "7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
+ *   lpValidatorTxHash: "abc123...",
+ *   lpValidatorTxOutput: 0
+ * });
+ */
 
 export async function createDeposit(
   params: DepositParams
-): Promise<DepositResult> {
+): Promise<BuilderResponse> {
   const {
     lucid,
     balanceToDeposit,
@@ -57,7 +75,6 @@ export async function createDeposit(
 
     const poolDatumMapped = poolArtifacts.poolDatumMapped;
     const poolConfigDatum = poolArtifacts.poolConfigDatum;
-
 
     if (balanceToDeposit < poolConfigDatum.minTransition) {
       throw new Error("Protocol does not allow this small deposit");
@@ -98,9 +115,6 @@ export async function createDeposit(
       },
     };
 
-    let metadata = {
-      msg: ["Lenfi: DEPOSITED to pool."],
-    };
 
     const deployedValidators: DeployedValidators = parseValidators(
       deployedValidatorsJson
@@ -135,7 +149,6 @@ export async function createDeposit(
         },
         Data.to(lpTokenRedeemer, LiquidityTokenLiquidityToken.redeemer)
       )
-      .attachMetadata(674, metadata);
 
     if (lpValidatorTxHash != null && lpValidatorTxOutput != null) {
       const validatorsUtxos = await lucid.utxosByOutRef([

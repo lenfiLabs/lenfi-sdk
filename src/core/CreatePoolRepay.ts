@@ -18,7 +18,7 @@ import {
   parseValidators,
   toUnitOrLovelace,
 } from "../utils/helpers";
-import { DeployedValidators, ValidityRange } from "../types";
+import { BuilderResponse, DeployedValidators, ValidityRange } from "../types";
 import { CollateralMint, CollateralSpend, PoolSpend } from "../plutus";
 
 export interface RepayParams {
@@ -28,14 +28,20 @@ export interface RepayParams {
   loanTxHash: string;
   loanTxOutputIndex: number;
 }
+/**
+ * Creates a repayment transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for repaying a loan.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {string} params.loanTxHash - The transaction hash of the loan to be repaid.
+ * @param {number} params.loanTxOutputIndex - The output index of the loan in the transaction.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ */
 
-export interface RepayResult {
-  success: boolean;
-  error?: string;
-  tx?: TxComplete;
-}
-
-export async function repayLoan(params: RepayParams): Promise<RepayResult> {
+export async function repayLoan(params: RepayParams): Promise<BuilderResponse> {
   const { lucid, validityRange, poolTokenName, loanTxHash, loanTxOutputIndex } =
     params;
 
