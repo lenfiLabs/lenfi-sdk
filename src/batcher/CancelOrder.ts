@@ -11,14 +11,34 @@ import {
 export interface CancelBatcherOrderParams {
   lucid: Lucid;
   poolTokenName: string;
-  cancelTxHash: string;
-  cancelTxIndex: number;
+  orderTxHash: string;
+  orderTxIndex: number;
 }
+/**
+ * Cancels a batcher order in the Lenfi protocol.
+ *
+ * This function attempts to cancel an existing batcher order (deposit, withdraw, or borrow)
+ * by consuming the UTxO that represents the order and returning the funds to the user.
+ *
+ * @param {Object} params - The parameters for cancelling a batcher order.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {string} params.orderTxHash - The transaction hash of the order to be cancelled.
+ * @param {number} params.orderTxIndex - The output index of the order in the transaction.
+ *
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status
+ * and either the completed transaction or an error message.
+ *
+ * @throws {Error} Throws an error if:
+ *   - The pool config cannot be found
+ *   - The order cannot be found or is of an unknown type
+ *   - The wallet details cannot be retrieved
+ */
 
 export async function cancelBatcherOrder(
   params: CancelBatcherOrderParams
 ): Promise<BuilderResponse> {
-  const { lucid, poolTokenName, cancelTxHash, cancelTxIndex } = params;
+  const { lucid, poolTokenName, orderTxHash, orderTxIndex } = params;
 
   try {
     const validators = collectValidators(lucid, poolTokenName, GOV_TOKEN_NAME);
@@ -26,8 +46,8 @@ export async function cancelBatcherOrder(
     const batcherUtxos = (
       await lucid.utxosByOutRef([
         {
-          txHash: cancelTxHash,
-          outputIndex: cancelTxIndex,
+          txHash: orderTxHash,
+          outputIndex: orderTxIndex,
         },
       ])
     )[0];

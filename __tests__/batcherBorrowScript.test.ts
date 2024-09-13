@@ -1,6 +1,5 @@
-import { BatcherBorrowParams, createBatcherBorrow } from "../src/batcher/CreateBatcherBorrow";
+import { BatcherBorrowParams, createBatcherBorrow } from "../src";
 import { TokenPrice } from "../src/types";
-import { BorrowParams, createLoan } from "../src/core/CreatePoolBorrow";
 import { Blockfrost, Lucid } from "lucid-cardano";
 
 import dotenv from "dotenv";

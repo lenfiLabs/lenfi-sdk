@@ -1,8 +1,7 @@
 import {
   BatcherWithdrawParams,
   createBatcherWithdraw,
-} from "../src/batcher/CreateBatcherWithdraw";
-
+} from "../src";
 import { Blockfrost, Lucid } from "lucid-cardano";
 
 import dotenv from "dotenv";

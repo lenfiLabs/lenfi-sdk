@@ -32,6 +32,23 @@ export interface BatcherExecuteDepositParams {
   lpValidatorTxOutput?: number;
 }
 
+/**
+ * Executes a batcher deposit order in the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for executing a batcher deposit order.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {string} params.orderTxHash - The transaction hash of the deposit order to be executed.
+ * @param {number} params.orderTxOutputIndex - The output index of the deposit order in the transaction.
+ * @param {string} [params.lpValidatorTxHash] - Optional. The transaction hash where the LP validator script is stored for reference.
+ * @param {number} [params.lpValidatorTxOutput] - Optional. The transaction output index where the LP validator script is stored for reference.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if:
+ *   - The order UTxO is not found
+ *   - The LP tokens to receive cannot be calculated
+ */
+
 export async function executeBatcherDeposit(
   params: BatcherExecuteDepositParams
 ): Promise<BuilderResponse> {

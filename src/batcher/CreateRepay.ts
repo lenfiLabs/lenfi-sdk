@@ -21,6 +21,19 @@ export interface BatcherRepayParams {
   loanTxOutputIndex: number;
 }
 
+/**
+ * Creates a batcher repay transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for creating a batcher repay.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {string} params.loanTxHash - The transaction hash of the loan to be repaid.
+ * @param {number} params.loanTxOutputIndex - The output index of the loan in the transaction.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ */
+
 export async function createBatcherRepay(
   params: BatcherRepayParams
 ): Promise<BuilderResponse> {

@@ -32,6 +32,23 @@ export interface BatcherExecuteRepayParams {
   orderTxOutputIndex: number;
 }
 
+/**
+ * Executes a batcher repay order in the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for executing a batcher repay order.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {string} params.orderTxHash - The transaction hash of the repay order to be executed.
+ * @param {number} params.orderTxOutputIndex - The output index of the repay order in the transaction.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if:
+ *   - The order UTxO is not found
+ *   - The collateral amount cannot be determined
+ *   - The accumulated interest cannot be calculated
+ */
+
 export async function executeBatcherRepay(
   params: BatcherExecuteRepayParams
 ): Promise<BuilderResponse> {

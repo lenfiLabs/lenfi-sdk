@@ -479,7 +479,6 @@ export async function collectOracleDetails(
 
   const apiEndpoints = [
     "https://oracle-node-0.lenfi.io/validateData",
-    // Add more endpoints as needed
   ];
 
   const responses = await fetchDataFromEndpoints(apiEndpoints, requestData);

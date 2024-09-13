@@ -9,6 +9,24 @@ export interface ClaimLiquidatedParams {
   liquidationTxHash: string;
   liquidationTxOutputIndex: number;
 }
+/**
+ * Claims the liquidated assets from a liquidation transaction in the Lenfi protocol.
+ * 
+ * This function allows the borrower to claim any remaining collateral after a liquidation has occurred.
+ * 
+ * @param {Object} params - The parameters for claiming liquidated assets.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {string} params.liquidationTxHash - The transaction hash of the liquidation transaction.
+ * @param {number} params.liquidationTxOutputIndex - The output index of the liquidation UTxO in the transaction.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status 
+ * and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if:
+ *   - The liquidation UTxO cannot be found
+ *   - The liquidation datum cannot be parsed
+ *   - There are issues with burning the borrower token
+ */
 
 export async function claimeLiquidated(
   params: ClaimLiquidatedParams

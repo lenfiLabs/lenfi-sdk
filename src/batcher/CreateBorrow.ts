@@ -1,7 +1,6 @@
 import { Address, Data, Lucid, getAddressDetails } from "lucid-cardano";
 import { GOV_TOKEN_NAME, MIN_ADA } from "../constants";
 import {
-  calculateLpsToBurn,
   collectValidators,
   constructValueWithMinAda,
   getInterestRates,
@@ -27,6 +26,23 @@ export interface BatcherBorrowParams {
   collateralTokenPrice: TokenPrice | undefined;
   loanTokenPrice: TokenPrice | undefined;
 }
+
+/**
+ * Creates a batcher borrow transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for creating a batcher borrow.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {bigint} params.loanAmount - The amount of tokens to borrow.
+ * @param {bigint} params.collateralAmount - The amount of collateral to provide for the loan.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {TokenPrice} params.collateralTokenPrice - The price information for the collateral token.
+ * @param {TokenPrice} params.loanTokenPrice - The price information for the loan token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the loan amount is below the minimum allowed by the protocol.
+ */
 
 export async function createBatcherBorrow(
   params: BatcherBorrowParams

@@ -15,6 +15,18 @@ export interface BatcherDepositParams {
   balanceToDeposit: bigint;
   poolTokenName: string;
 }
+/**
+ * Creates a batcher deposit transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for creating a batcher deposit.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {bigint} params.balanceToDeposit - The amount of tokens to deposit into the pool.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the deposit amount is below the minimum allowed by the protocol.
+ */
 
 export async function createBatcherDeposit(
   params: BatcherDepositParams

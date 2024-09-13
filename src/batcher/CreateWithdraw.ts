@@ -17,6 +17,19 @@ export interface BatcherWithdrawParams {
   poolTokenName: string;
 }
 
+/**
+ * Creates a batcher withdraw transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for creating a batcher withdraw.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {bigint} params.amountToWithdraw - The amount of tokens to withdraw from the pool.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the withdrawal amount is below the minimum allowed by the protocol.
+ */
+
 export async function createBatcherWithdraw(
   params: BatcherWithdrawParams
 ): Promise<BuilderResponse> {

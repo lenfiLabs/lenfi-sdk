@@ -41,6 +41,26 @@ export interface BatcherExecuteBorrowParams {
   loanTokenPrice: TokenPrice | undefined;
 }
 
+/**
+ * Executes a batcher borrow order in the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for executing a batcher borrow order.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {ValidityRange} params.validityRange - The validity range for the transaction.
+ * @param {string} params.orderTxHash - The transaction hash of the borrow order to be executed.
+ * @param {number} params.orderTxOutputIndex - The output index of the borrow order in the transaction.
+ * @param {TokenPrice | undefined} params.collateralTokenPrice - The price information for the collateral token.
+ * @param {TokenPrice | undefined} params.loanTokenPrice - The price information for the loan token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if:
+ *   - The order UTxO is not found
+ *   - The loan amount is greater than the pool balance
+ *   - The interest rate is too high
+ *   - The loan or collateral amount cannot be determined
+ */
+
 export async function executeBatcherBorrow(
   params: BatcherExecuteBorrowParams
 ): Promise<BuilderResponse> {

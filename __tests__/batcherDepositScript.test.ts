@@ -1,7 +1,7 @@
 import {
   BatcherDepositParams,
   createBatcherDeposit,
-} from "../src/batcher/CreateBatcherDeposit";
+} from "../src";
 
 import { Blockfrost, Lucid } from "lucid-cardano";
 

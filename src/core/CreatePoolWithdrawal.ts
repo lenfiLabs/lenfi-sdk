@@ -26,6 +26,20 @@ export interface WithdrawParams {
   lpValidatorTxHash?: string;
   lpValidatorTxOutput?: number;
 }
+/**
+ * Creates a withdrawal transaction for the Lenfi protocol.
+ * 
+ * @param {Object} params - The parameters for withdrawing from a pool.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {bigint} params.amountToWithdraw - The amount of tokens to withdraw from the pool.
+ * @param {string} params.poolTokenName - The name of the pool token.
+ * @param {string} [params.lpValidatorTxHash] - Optional. The transaction hash where the LP validator script is stored for reference.
+ * @param {number} [params.lpValidatorTxOutput] - Optional. The transaction output index where the LP validator script is stored for reference.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the withdrawal amount is below the minimum allowed by the protocol.
+ */
 
 export async function createWithdrawal(
   params: WithdrawParams
