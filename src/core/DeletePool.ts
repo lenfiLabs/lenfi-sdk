@@ -17,13 +17,52 @@ import {
 } from "../plutus";
 
 export interface DeleteParameters {
+  /**
+   * The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+   */
   lucid: Lucid;
+
+  /**
+   * The name of the pool token to be deleted.
+   */
   poolTokenName: string;
+
+  /**
+   * The transaction hash where the LP validator script is stored for reference.
+   */
   lpValidatorTxHash: string;
+
+  /**
+   * The transaction output index where the LP validator script is stored for reference.
+   */
   lpValidatorTxOutput: number;
+
+  /**
+   * The transaction hash where the stake validator script is stored for reference.
+   */
   stakeValidatorTxHash: string;
+
+  /**
+   * The transaction output index where the stake validator script is stored for reference.
+   */
   stakeValidatorTxOutput: number;
 }
+
+/**
+ * Deletes a Lenfi pool.
+ * 
+ * @param {DeleteParameters} params - The parameters for deleting a pool.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+ * @param {string} params.poolTokenName - The name of the pool token to be deleted.
+ * @param {string} params.lpValidatorTxHash - The transaction hash where the LP validator script is stored for reference.
+ * @param {number} params.lpValidatorTxOutput - The transaction output index where the LP validator script is stored for reference.
+ * @param {string} params.stakeValidatorTxHash - The transaction hash where the stake validator script is stored for reference.
+ * @param {number} params.stakeValidatorTxOutput - The transaction output index where the stake validator script is stored for reference.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the pool deletion process fails for any reason, such as insufficient permissions or if the pool is not empty.
+ */
 
 export async function deletePool(
   params: DeleteParameters

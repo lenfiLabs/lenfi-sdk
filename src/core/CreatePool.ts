@@ -18,29 +18,123 @@ import {
   PoolStakePoolStake,
 } from "../plutus";
 
+/**
+ * Represents the parameters for configuring a token in the Lenfi protocol.
+ */
 export interface TokenParameters {
+  /**
+   * The asset class of the oracle NFT that is used for the price feeds and is locked in desired oracle script.
+   */
   oracleNft: AssetClass;
+
+  /**
+   * The initial collateral ratio required for loans. (220% = 22_000_000)
+   */
   initialCollateralRatio: bigint;
+
+  /**
+   * The threshold at which a loan becomes eligible for liquidation.
+   */
   liquidationThreshold: bigint;
+
+  /**
+   * The fee charged during liquidation, expressed as a percentage.
+   */
   liquidationFee: bigint;
+
+  /**
+   * The minimum fee that can be used with 'payFee' redeemer (withdraw stake rewards)
+   */
   minFee: bigint;
+
+  /**
+   * The fee charged by the pool for any operations 
+   */
   poolFee: bigint;
+
+  /**
+   * The minimum amount required for a transition (borrow, repay, deposit, withdraw).
+   */
   minTransition: bigint;
+
+  /**
+   * The minimum amount that will be received within liquidation (as a liquidation fee)
+   */
   minLiquidationAmount: bigint;
+
+  /**
+   * The fee charged for merging actions in the pool.
+   */
   mergeActionFee: bigint;
+
+  /**
+   * The minimum amount that can be borrowed in a single loan.
+   */
   minLoanAmount: bigint;
 }
 
+/**
+ * Represents the parameters required to create a new Lenfi pool.
+ */
 export interface PoolParameters {
+  /**
+   * The Lucid instance for interacting with the Cardano blockchain. With wallet attached.
+   */
   lucid: Lucid;
+
+  /**
+   * The asset class of the token that can be borrowed from this pool.
+   */
   loanAsset: AssetClass;
+
+  /**
+   * The asset class of the token that can be used as collateral in this pool.
+   */
   collateralAsset: AssetClass;
+
+  /**
+   * The initial amount of tokens to deposit into the pool.
+   */
   initialDepositAmount: bigint;
+
+  /**
+   * The Bech32 encoded address of the stake pool to delegate to.
+   */
   delegationSpoBech: string;
+
+  /**
+   * The ID of the stake pool to delegate to.
+   */
   delegationSpoId: string;
+
+  /**
+   * The parameters for configuring the loan token.
+   */
   loanTokenParameters: TokenParameters;
+
+  /**
+   * The parameters for configuring the collateral token.
+   */
   collateralTokenParameters: TokenParameters;
 }
+
+/**
+ * Creates a new Lenfi pool with the specified parameters.
+ * 
+ * @param {PoolParameters} params - The parameters for creating a new pool.
+ * @param {Lucid} params.lucid - The Lucid instance for interacting with the Cardano blockchain.
+ * @param {AssetClass} params.loanAsset - The asset class of the token that can be borrowed from this pool.
+ * @param {AssetClass} params.collateralAsset - The asset class of the token that can be used as collateral in this pool.
+ * @param {bigint} params.initialDepositAmount - The initial amount of tokens to deposit into the pool.
+ * @param {string} params.delegationSpoBech - The Bech32 encoded address of the stake pool to delegate to.
+ * @param {string} params.delegationSpoId - The ID of the stake pool to delegate to.
+ * @param {TokenParameters} params.loanTokenParameters - The parameters for configuring the loan token.
+ * @param {TokenParameters} params.collateralTokenParameters - The parameters for configuring the collateral token.
+ * 
+ * @returns {Promise<BuilderResponse>} A promise that resolves to an object containing the success status and either the completed transaction or an error message.
+ * 
+ * @throws {Error} Throws an error if the pool creation process fails for any reason, such as insufficient funds or invalid parameters.
+ */
 
 export async function createPool(
   params: PoolParameters

@@ -21,6 +21,9 @@ Here's a list of all available functions in the lenfi-sdk:
 13. `executeBatcherWithdraw`: Execute a batcher withdraw order.
 14. `cancelBatcherOrder`: Cancel a batcher order.
 15. `claimeLiquidated`: Claim liquidated assets after a liquidation.
+16. `createPool`: Create a new Lenfi pool.
+17. `delegatePool`: Delegate a Lenfi pool to a stake pool.
+18. `deletePool`: Delete a Lenfi pool.
 
 ## Direct Transactions vs. Batcher Transactions
 
@@ -363,6 +366,128 @@ const claimLiquidatedExample = async () => {
 
   const claimResult = await claimeLiquidated(claimParams);
   console.log(claimResult);
+};
+```
+
+### Creating a Pool
+
+To create a new Lenfi pool
+
+```typescript
+import { createPool, PoolParameters } from "lenfi-sdk";
+import { Blockfrost, Lucid } from "lucid-cardano";
+
+const createPoolExample = async () => {
+  const lucid = await initLucid(blockfrostApiKey, userAddress);
+
+  const poolCreationParameters: PoolParameters = {
+    lucid,
+    loanAsset: {
+      policyId: "8fef2d34078659493ce161a6c7fba4b56afefa8535296a5743f69587",
+      assetName: "41414441",
+    },
+    collateralAsset: {
+      policyId: "",
+      assetName: "",
+    },
+    initialDepositAmount: BigInt(1000000),
+    delegationSpoBech:
+      "pool1z5uqdk7dzdxaae5633fqfcu2eqzy3a3rgtuvy087fdld7yws0xt",
+    delegationSpoId:
+      "153806dbcd134ddee69a8c5204e38ac80448f62342f8c23cfe4b7edf",
+    loanTokenParameters: {
+      oracleNft: {
+        policyId: "",
+        assetName: "",
+      },
+      liquidationThreshold: 2_000_000n,
+      initialCollateralRatio: 2_100_000n,
+      liquidationFee: 12n,
+      poolFee: 1_000_000n,
+      minFee: 1_000_000n,
+      mergeActionFee: 2_000_000n,
+      minTransition: 50_000_000n,
+      minLiquidationAmount: 29999n,
+      minLoanAmount: 50_000_000n,
+    },
+    collateralTokenParameters: {
+      oracleNft: {
+        policyId: "",
+        assetName: "",
+      },
+      liquidationThreshold: 2_000_000n,
+      initialCollateralRatio: 2_100_000n,
+      liquidationFee: 12n,
+      poolFee: 1_000_000n,
+      minFee: 1_000_000n,
+      mergeActionFee: 2_000_000n,
+      minTransition: 50_000_000n,
+      minLiquidationAmount: 29999n,
+      minLoanAmount: 50_000_000n,
+    },
+  };
+
+  const createPoolResult = await createPool(poolCreationParameters);
+  console.log(createPoolResult);
+};
+```
+
+Lenfi as a protocol accepts pre-defined parameters for the fees, amounts or NFTs, you can pull these by token from https://api.lenfi.io/api/v0.1/tokens_parameters
+
+### Delegating a Pool
+
+To delegate a Lenfi pool to a stake pool:
+
+```typescript
+import { delegatePool, DelegationParameters } from "lenfi-sdk";
+import { Blockfrost, Lucid } from "lucid-cardano";
+
+const delegatePoolExample = async () => {
+  const lucid = await initLucid(blockfrostApiKey, userAddress);
+
+  const poolDelegationParameters: DelegationParameters = {
+    lucid,
+    poolTokenName:
+      "7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
+    poolOwnerNftId:
+      "c04e78ea267631f27975446a15d96ef1f3bbcdbf99577d3e552c663b1175ee981b6b88cd45d2cbfdf93ef48f968fa842588bde3027f2e4495f156c65",
+    stakePoolHash:
+      "pool1z5uqdk7dzdxaae5633fqfcu2eqzy3a3rgtuvy087fdld7yws0xt",
+    stakeValidatorTxHash:
+      "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
+    stakeValidatorTxOutput: 1,
+  };
+
+  const delegatePoolResult = await delegatePool(poolDelegationParameters);
+  console.log(delegatePoolResult);
+};
+```
+
+### Deleting a Pool
+
+To delete a Lenfi pool:
+
+```typescript
+import { deletePool, DeleteParameters } from "lenfi-sdk";
+import { Blockfrost, Lucid } from "lucid-cardano";
+
+const deletePoolExample = async () => {
+  const lucid = await initLucid(blockfrostApiKey, userAddress);
+
+  const poolDeletionParameters: DeleteParameters = {
+    lucid,
+    poolTokenName:
+      "7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
+    lpValidatorTxHash:
+      "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
+    lpValidatorTxOutput: 0,
+    stakeValidatorTxHash:
+      "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
+    stakeValidatorTxOutput: 1,
+  };
+
+  const deletePoolResult = await deletePool(poolDeletionParameters);
+  console.log(deletePoolResult);
 };
 ```
 
