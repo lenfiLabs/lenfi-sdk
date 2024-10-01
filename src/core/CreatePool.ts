@@ -20,16 +20,15 @@ import {
 
 export interface TokenParameters {
   oracleNft: AssetClass;
-  initialCollateralRatio: number;
-  liquidationThreshold: number;
-  liquidationFee: number;
-  minFee: number;
-  poolFee: number;
-  minTransition: number;
-  minLiquidationAmount: number;
-  mergeActionFee: number;
-  minLoanAmount: number;
-  tokenId: string;
+  initialCollateralRatio: bigint;
+  liquidationThreshold: bigint;
+  liquidationFee: bigint;
+  minFee: bigint;
+  poolFee: bigint;
+  minTransition: bigint;
+  minLiquidationAmount: bigint;
+  mergeActionFee: bigint;
+  minLoanAmount: bigint;
 }
 
 export interface PoolParameters {
@@ -80,7 +79,9 @@ export async function createPool(
       },
       initialOutputRef
     );
+
     const stakeKeyHash = lucid.utils.validatorToScriptHash(stakingValidator);
+
     const poolTokenName = stakeKeyHash;
 
     const validators = collectValidators(lucid, poolTokenName, GOV_TOKEN_NAME);
@@ -177,20 +178,17 @@ export async function createPool(
     const delegatorNft = toUnit(validators.delegatorNftPolicyId, configNftName);
     const configNft = toUnit(validators.poolConfigPolicyId, configNftName);
 
-    defaultConfig.initialCollateralRatio = BigInt(
-      collateralTokenParameters.initialCollateralRatio
-    );
-    defaultConfig.liquidationThreshold = BigInt(
-      collateralTokenParameters.liquidationThreshold
-    );
-    defaultConfig.minFee = BigInt(loanTokenParameters.minFee);
-    defaultConfig.poolFee = BigInt(loanTokenParameters.poolFee);
-    defaultConfig.minTransition = BigInt(loanTokenParameters.minTransition);
-    defaultConfig.mergeActionFee = BigInt(loanTokenParameters.mergeActionFee);
-    defaultConfig.minLoan = BigInt(loanTokenParameters.minLoanAmount);
-    defaultConfig.minLiquidationFee = BigInt(
-      collateralTokenParameters.minLiquidationAmount
-    );
+    defaultConfig.initialCollateralRatio =
+      collateralTokenParameters.initialCollateralRatio;
+    defaultConfig.liquidationThreshold =
+      collateralTokenParameters.liquidationThreshold;
+    defaultConfig.minFee = loanTokenParameters.minFee;
+    defaultConfig.poolFee = loanTokenParameters.poolFee;
+    defaultConfig.minTransition = loanTokenParameters.minTransition;
+    defaultConfig.mergeActionFee = loanTokenParameters.mergeActionFee;
+    defaultConfig.minLoan = loanTokenParameters.minLoanAmount;
+    defaultConfig.minLiquidationFee =
+      collateralTokenParameters.minLiquidationAmount;
 
     // Which ever liquidation fee is higher is applied to the pool
     if (
