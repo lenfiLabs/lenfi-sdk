@@ -1,4 +1,4 @@
-import { delegatePool, DelegationParameters } from "../src";
+import { deletePool, DeleteParameters } from "../src";
 import { Blockfrost, Lucid } from "lucid-cardano";
 
 import dotenv from "dotenv";
@@ -26,20 +26,19 @@ describe("depositScript", () => {
 
       lucid.selectWalletFrom({ address });
 
-      const poolDelegationParameters: DelegationParameters = {
+      const poolDeletionParameters: DeleteParameters = {
         lucid,
         poolTokenName:
           "7876ebac44945a88855442692b86400776e0a2987c5f54a19b457d86",
-        poolOwnerNftId:
-          "c04e78ea267631f27975446a15d96ef1f3bbcdbf99577d3e552c663b1175ee981b6b88cd45d2cbfdf93ef48f968fa842588bde3027f2e4495f156c65",
-        stakePoolHash:
-          "pool1z5uqdk7dzdxaae5633fqfcu2eqzy3a3rgtuvy087fdld7yws0xt",
+        lpValidatorTxHash:
+          "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
+        lpValidatorTxOutput: 0,
         stakeValidatorTxHash:
           "17d2a5a56aacc0905b0abc6d40beee70a207155acf7e712f18d0c59c95fc5cba",
         stakeValidatorTxOutput: 1,
       };
 
-      const depositResult = await delegatePool(poolDelegationParameters);
+      const depositResult = await deletePool(poolDeletionParameters);
 
       // Assert that depositResult is defined
       expect(depositResult).toBeDefined();

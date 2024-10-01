@@ -1,3 +1,4 @@
+import { DeleteParameters } from "./core/DeletePool";
 import { DelegationParameters } from "./core/DelegatePool";
 export { createDeposit, DepositParams } from "./core/CreatePoolDeposit";
 export { createLoan, BorrowParams } from "./core/CreatePoolBorrow";
@@ -52,3 +53,5 @@ export {
 export { PoolParameters, createPool } from "./core/CreatePool";
 
 export { DelegationParameters, delegatePool } from "./core/DelegatePool";
+
+export { DeleteParameters, deletePool } from "./core/DeletePool";

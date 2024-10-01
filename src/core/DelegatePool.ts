@@ -1,6 +1,7 @@
 import { Data, Lucid, Credential } from "lucid-cardano";
 import { BuilderResponse } from "../types";
 import { PoolStakePoolStake } from "../plutus";
+import { getOutputReference } from "../utils/helpers";
 
 export interface DelegationParameters {
   lucid: Lucid;
@@ -36,10 +37,7 @@ export async function delegatePool(
     let delegateRedeemer: PoolStakePoolStake["redeemer"] = {
       Publish: [
         {
-          poolOwnerOref: {
-            transactionId: { hash: poolOwnerUTxO.txHash },
-            outputIndex: BigInt(poolOwnerUTxO.outputIndex),
-          },
+          poolOwnerOref: getOutputReference(poolOwnerUTxO),
         },
       ],
     };
