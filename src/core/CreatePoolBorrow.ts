@@ -1,4 +1,4 @@
-import { Data, Lucid, Credential, toUnit, TxComplete } from "lucid-cardano";
+import { Data, Lucid, Credential, toUnit } from "lucid-cardano";
 import deployedValidatorsJson from "../deployedValidators.json" assert { type: "json" };
 import { GOV_TOKEN_NAME } from "../constants";
 import {
