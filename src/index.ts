@@ -47,3 +47,9 @@ export {
   BatcherExecuteWithdrawParams,
   executeBatcherWithdraw,
 } from "./batcher/ExecuteWithdrawal";
+
+export { PoolParameters, createPool } from "./core/CreatePool";
+
+export { DelegationParameters, delegatePool } from "./core/DelegatePool";
+
+export { DeleteParameters, deletePool } from "./core/DeletePool";

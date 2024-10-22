@@ -1,6 +1,6 @@
 {
   "name": "lenfi-sdk",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "mandriuska",
   "description": "SDK library to interact with Lenfi protocol.",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "axios": "^1.6.0",
     "bignumber.js": "^9.1.2",
     "dotenv": "^16.4.5",
-    "lucid-cardano": "^0.10.9"
+    "lucid-cardano": "^0.10.10"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",

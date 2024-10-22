@@ -13,11 +13,13 @@ const distPackageJson = {
   name: packageJson.name,
   version: packageJson.version,
   description: packageJson.description,
-  main: 'index.js',
-  types: 'index.d.ts',
+  main: 'index.js', // relative to dist
+  types: 'index.d.ts', // relative to dist
   author: packageJson.author,
   license: packageJson.license,
-  repository: packageJson.repository
+  repository: packageJson.repository,
+  type: packageJson.type, // preserve the "type": "module"
+  dependencies: packageJson.dependencies // include dependencies
 };
 
 // Write the dist package.json
