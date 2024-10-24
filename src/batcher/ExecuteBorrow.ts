@@ -353,7 +353,7 @@ export async function executeBatcherBorrow(
       ).readFrom([oracle.nftReferenceUtxo]);
     });
 
-    const completedTx = await tx.complete();
+    const completedTx = await tx.complete({ nativeUplc: false });
 
     return { success: true, tx: completedTx };
   } catch (error) {

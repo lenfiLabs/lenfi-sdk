@@ -239,7 +239,7 @@ export async function createLoan(params: BorrowParams): Promise<BuilderResponse>
         .readFrom([oracle.nftReferenceUtxo]);
     });
 
-    const completedTx = await txBuilder.complete();
+    const completedTx = await txBuilder.complete({ nativeUplc: false });
 
     return { success: true, tx: completedTx };
   } catch (error) {

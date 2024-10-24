@@ -256,7 +256,7 @@ export async function executeBatcherRepay(
         }
       );
     }
-    const completedTx = await tx.complete();
+    const completedTx = await tx.complete({ nativeUplc: false });
 
     return { success: true, tx: completedTx };
   } catch (error) {
