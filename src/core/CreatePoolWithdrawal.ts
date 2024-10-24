@@ -3,8 +3,6 @@ import {
   Lucid,
   Credential,
   toUnit,
-  TxComplete,
-  UTxO,
 } from "lucid-cardano";
 import deployedValidatorsJson from "../deployedValidators.json" assert { type: "json" };
 import { GOV_TOKEN_NAME } from "../constants";

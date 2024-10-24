@@ -3,7 +3,6 @@ import {
   Lucid,
   Credential,
   toUnit,
-  TxComplete,
   UTxO,
 } from "lucid-cardano";
 import deployedValidatorsJson from "../deployedValidators.json" assert { type: "json" };
@@ -31,7 +30,6 @@ import {
   ValidityRange,
 } from "../types";
 import {
-  CollateralMint,
   CollateralSpend,
   LeftoversLeftovers,
   OracleValidatorWithdrawValidate,
